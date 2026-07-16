@@ -1,9 +1,9 @@
 [project]
-name = "bidgely"
-version = "0.1.5"
+name = "bidgely-avista"
+version = "0.2.0"
 license = "Apache-2.0"
 description = "A python library for downloading your historical data fromutilities that use Bidgely"
-authors = [{ name = "Carter Green", email = "carter.green@icloud.com" }]
+authors = [{ name = "Nick Bogle", email = "nick@bogle.net" }, { name = "Carter Green", email = "carter.green@icloud.com" }]
 readme = "README.md"
 requires-python = ">=3.10,<4.0"
 dependencies = [
@@ -15,8 +15,8 @@ dependencies = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/carterjgreen/bidgely"
-"Bug Tracker" = "https://github.com/carterjgreen/bidgely/issues"
+"Homepage" = "https://github.com/nick-bogle/bidgely"
+"Bug Tracker" = "https://github.com/nick-bogle/bidgely/issues"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.5.1"
