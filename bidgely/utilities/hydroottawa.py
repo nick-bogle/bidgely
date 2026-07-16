@@ -58,6 +58,11 @@ class HydroOttawa(UtilityBase):
         return "America/Toronto"
 
     @staticmethod
+    def api_url() -> str:
+        """Return the base URL of the utility's Bidgely API host."""
+        return "https://naapi-read.bidgely.com"
+
+    @staticmethod
     async def async_login(
         session: aiohttp.ClientSession,
         username: str,

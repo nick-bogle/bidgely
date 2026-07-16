@@ -4,14 +4,13 @@ import logging
 from datetime import datetime, timedelta
 
 import aiohttp
+from aiohttp.web_exceptions import HTTPServerError
 
 from bidgely import AggregateType, Bidgely
 
-BIDGELY_URL = "https://naapi-read.bidgely.com"
-
 
 async def _main() -> None:
-    supported_utilities = ["HydroOttawa"]
+    supported_utilities = ["HydroOttawa", "Avista"]
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--utility",
@@ -64,7 +63,7 @@ async def _main() -> None:
 
     async with aiohttp.ClientSession() as session:
         bidgely = Bidgely(
-            session, "Hydro Ottawa", args.username, args.password, args.account_id
+            session, args.utility, args.username, args.password, args.account_id
         )
         await bidgely.async_login()
         print(f"Bidgely User ID: {bidgely.user_id}")
@@ -83,8 +82,11 @@ async def _main() -> None:
                     f"Cost: ${read.cost:4.2f}",
                 )
 
-        forecasted = await bidgely.async_get_forecast()
-        print(forecasted)
+        # Not every utility exposes billprojections on its Bidgely host.
+        try:
+            print(await bidgely.async_get_forecast())
+        except HTTPServerError:
+            print(f"{args.utility} does not support forecasts")
         items = await bidgely.async_get_breakdown(
             start=datetime.now() - timedelta(days=29)
         )

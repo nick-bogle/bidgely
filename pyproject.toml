@@ -1,22 +1,22 @@
-[tool.poetry]
+[project]
 name = "bidgely"
 version = "0.1.5"
 license = "Apache-2.0"
 description = "A python library for downloading your historical data fromutilities that use Bidgely"
-authors = ["Carter Green <carter.green@icloud.com>"]
+authors = [{ name = "Carter Green", email = "carter.green@icloud.com" }]
 readme = "README.md"
+requires-python = ">=3.10,<4.0"
+dependencies = [
+    "aiohttp>=3.8.5,<4.0.0",
+    "boto3>=1.26.32,<2.0.0",
+    "py3rijndael>=0.3.3,<0.4.0",
+    "pre-commit>=3.0.0",
+    "pydantic>=2.0.0",
+]
 
 [project.urls]
 "Homepage" = "https://github.com/carterjgreen/bidgely"
 "Bug Tracker" = "https://github.com/carterjgreen/bidgely/issues"
-
-[tool.poetry.dependencies]
-python = "^3.10"
-aiohttp = "^3.8.5"
-boto3 = "^1.26.32"
-py3rijndael = "^0.3.3"
-pre-commit = ">=3.0.0"
-pydantic = ">=2.0.0"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.5.1"
@@ -25,7 +25,7 @@ ruff = "^0.0.285"
 flake8 = "^6.1.0"
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=2.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
