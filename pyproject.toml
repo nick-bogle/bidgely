@@ -10,7 +10,6 @@ dependencies = [
     "aiohttp>=3.8.5,<4.0.0",
     "boto3>=1.26.32,<2.0.0",
     "py3rijndael>=0.3.3,<0.4.0",
-    "pre-commit>=3.0.0",
     "pydantic>=2.0.0",
 ]
 
@@ -18,11 +17,17 @@ dependencies = [
 "Homepage" = "https://github.com/nick-bogle/bidgely"
 "Bug Tracker" = "https://github.com/nick-bogle/bidgely/issues"
 
+[tool.poetry]
+# The distribution is bidgely-avista but the import package is still bidgely,
+# so Poetry cannot infer the directory from the name.
+packages = [{ include = "bidgely" }]
+
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.5.1"
 black = "^23.7.0"
 ruff = "^0.0.285"
 flake8 = "^6.1.0"
+pre-commit = ">=3.0.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0"]
