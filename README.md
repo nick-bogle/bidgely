@@ -5,6 +5,7 @@ A Python library for getting historical and forecasted usage/cost from utilities
 Supported utilities:
 
 - Hydro Ottawa
+- Avista
 
 Possible Supports:
 
@@ -17,7 +18,7 @@ More [here](https://www.bidgely.com/customers/)
 
 ## Support a new utility
 
-To add support for a new utility that uses the Bidgely NA API (you can tell if the energy dashboard of your utility makes network requests to naapi-read.bidgely.com in the network tab of your browser's developer tools) add a file similar to
+To add support for a new utility that uses the Bidgely API (you can tell if the energy dashboard of your utility makes network requests to a `*.bidgely.com` host in the network tab of your browser's developer tools -- naapi-read.bidgely.com for Hydro Ottawa, avista-prodapi.bidgely.com for Avista) add a file similar to
 [hydroottawa.py](https://github.com/carterjgreen/bidgely/blob/main/src/opower/utilities/pge.py)
 
 Name the file after the utility , e.g. hydroottawa.py for Hydro Ottawa or bchydro.py for BC Hydro.

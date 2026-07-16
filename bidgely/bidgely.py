@@ -59,13 +59,17 @@ class AggregateType(Enum):
 class MeasurementCategory(Enum):
     """Bidgely's classification of energy usage"""
 
+    AIR_CONDITIONING = "airConditioning"
     ALWAYS_ON = "alwaysOn"
     COOKING = "cooking"
+    ELECTRIC_VEHICLE = "electricVehicle"
     ENTERTAINMENT = "entertainment"
     LAUNDRY = "laundry"
     LIGHTING = "lighting"
     OTHER = "other"
     REFRIGERATION = "refrigeration"
+    SPACE_HEATING = "spaceHeating"
+    WATER_HEATING = "waterHeating"
 
     def __str__(self) -> str:
         """Return the value of the enum."""
@@ -212,7 +216,7 @@ class Bidgely:
         if you ask for gas forecasts.
         """
         url = (
-            "https://naapi-read.bidgely.com"
+            f"{self.utility.api_url()}"
             "/2.1/users/"
             f"{self.user_id}"
             "/homes/"
@@ -259,11 +263,12 @@ class Bidgely:
             start = datetime.fromtimestamp(967231641)
         if end is None:
             end = datetime.now()
+        endpoint = self.utility.usage_endpoint()
         url = (
-            "https://naapi-read.bidgely.com"
+            f"{self.utility.api_url()}"
             "/v2.0/dashboard/users/"
             f"{self.user_id}"
-            "/usage-chart-data"
+            f"/{endpoint}"
         )
         ps = {
             "measurement-type": measurement,
@@ -271,9 +276,10 @@ class Bidgely:
             "mode": _aggregate_to_mode(mode),
             "start": f"{int(start.timestamp())}",
             "end": f"{int(end.timestamp())}",
-            "skip-itemization": str(skip_itemization).lower(),
             "skip-ongoing-cycle": "true" if not skip_itemization else "false",
         }
+        if endpoint == "usage-chart-data":
+            ps["skip-itemization"] = str(skip_itemization).lower()
         h = {"authorization": f"Bearer {self.access_token}"}
 
         result: list[CostRead] = []
@@ -282,8 +288,15 @@ class Bidgely:
                 reads = await resp.json()
                 if DEBUG_LOG_RESPONSE:
                     logger.debug(f"Fetched: {json.dumps(result, indent=2)}")
+                # An expired token answers 200 with an error body, not a 401.
+                if reads.get("payload") is None:
+                    logger.debug("Failed to read data from Bidgely due to InvalidAuth")
+                    raise InvalidAuth(reads.get("error"))
                 logger.debug(f"Successful read from Bidgely for user: {self.user_id}")
-                for read in reads["payload"]:
+                payload = reads["payload"]
+                if endpoint == "usage-chart-details":
+                    payload = payload["usageChartDataList"]
+                for read in payload:
                     if (
                         not skip_itemization
                         and read["itemizationDetailsList"] is not None

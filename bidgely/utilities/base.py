@@ -17,6 +17,20 @@ class UtilityBase(BaseModel):
         raise NotImplementedError
 
     @staticmethod
+    def api_url() -> str:
+        """Return the base URL of the utility's Bidgely API host."""
+        raise NotImplementedError
+
+    @staticmethod
+    def usage_endpoint() -> str:
+        """Return the dashboard endpoint serving usage chart reads.
+
+        Deployments serving "usage-chart-details" return the same reads nested
+        under payload.usageChartDataList, and reject the skip-itemization param.
+        """
+        return "usage-chart-data"
+
+    @staticmethod
     async def async_login(
         session: aiohttp.ClientSession,
         username: str,
