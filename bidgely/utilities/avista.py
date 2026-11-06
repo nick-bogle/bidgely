@@ -1,13 +1,9 @@
-import base64
-import json
 import logging
 import re
-from typing import Any
 
 import aiohttp
-from py3rijndael import Pkcs7Padding, RijndaelCbc
 
-from bidgely.exceptions import InvalidAuth
+from bidgely.exceptions import CannotConnect, InvalidAuth
 
 from .base import UtilityBase
 
@@ -16,33 +12,6 @@ logger = logging.getLogger(__name__)
 MYAVISTA = "https://www.myavista.com"
 # appConfig.antiForgeryToken is inlined in the sign-in page's bootstrap script.
 ANTI_FORGERY = re.compile(r"antiForgeryToken:\s*'([^']+)'")
-
-
-def create_bidgely_payload(widget: dict[str, Any]) -> dict[str, str]:
-    """Rebuild the object myavista's bidgelyloader encrypts for Bidgely."""
-    payload = widget["PayLoad"]
-    return {
-        "utilityAccountIdentifier": payload["AccAndPremise"],
-        "fuelType": payload["SAType"],
-        "accountType": payload["AccountType"],
-        "accessToken": payload["AuthKey"],
-    }
-
-
-def create_bidgely_token(widget: dict[str, Any], payload: dict[str, str]) -> str:
-    """AES-256-CBC encrypt the payload with the per-session key myavista hands out.
-
-    Rijndael with a 16 byte block is AES; AESKey and IVCode are used as raw
-    ASCII, not decoded, which is what makes them 32 and 16 bytes respectively.
-    """
-    cipher = RijndaelCbc(
-        key=widget["AESKey"].encode(),
-        iv=widget["IVCode"].encode(),
-        padding=Pkcs7Padding(16),
-        block_size=16,
-    )
-    text = json.dumps(payload, separators=(",", ":")).encode()
-    return base64.b64encode(cipher.encrypt(text)).decode()
 
 
 class Avista(UtilityBase):
@@ -101,12 +70,22 @@ class Avista(UtilityBase):
         ) as resp:
             widget = await resp.json()
 
-        body = {
-            "clientId": widget["ClientId"],
-            "encryptedData": create_bidgely_token(
-                widget, create_bidgely_payload(widget)
-            ),
-        }
+        if not isinstance(widget, dict):
+            raise CannotConnect("Avista returned an invalid Bidgely widget response")
+
+        client_id = widget.get("ClientId")
+        encrypted_payload = widget.get("EncryptedPayload")
+        if (
+            not isinstance(client_id, str)
+            or not client_id
+            or not isinstance(encrypted_payload, str)
+            or not encrypted_payload
+        ):
+            raise CannotConnect(
+                "Avista did not return a valid Bidgely client ID or encrypted payload"
+            )
+
+        body = {"clientId": client_id, "encryptedData": encrypted_payload}
         # wc-session 400s unless the Origin is one Bidgely has whitelisted.
         async with session.post(
             f"{Avista.api_url()}/v2.0/web/wc-session",
